@@ -1,4 +1,8 @@
 import { useEffect, useRef } from "react";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { ScrollArea } from "./ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
@@ -33,10 +37,10 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
           const isLast = index === messages.length - 1;
 
           return (
-            <div 
-              key={msg.id || `msg-${index}`} 
+            <div
+              key={msg.id || `msg-${index}`}
               className={cn(
-                "flex items-start gap-3 w-full", 
+                "flex items-start gap-3 w-full",
                 isUser ? "flex-row-reverse" : "flex-row"
               )}
             >
@@ -50,12 +54,12 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
                 "flex flex-col gap-2 min-w-0 max-w-[85%]",
                 isUser ? "items-end" : "items-start"
               )}>
-                
+
                 {/* 1. RAZONAMIENTO: Solo para asistente y si no es RAW */}
                 {!raw && isAssistant && msg.reasoning && (
-                  <Accordion 
-                    type="single" 
-                    collapsible 
+                  <Accordion
+                    type="single"
+                    collapsible
                     defaultValue={isLast ? "thought" : undefined}
                     className="w-full bg-muted/30 rounded-lg px-3 border"
                   >
@@ -79,28 +83,45 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
 
                 {/* 2. BURBUJA DE TEXTO: Siempre visible para el usuario, condicional para el bot */}
                 <div className={cn(
-                  "rounded-2xl px-4 py-3 shadow-sm text-sm whitespace-pre-wrap break-words",
-                  isUser 
-                    ? "bg-primary text-primary-foreground rounded-tr-none" 
-                    : "bg-muted rounded-tl-none",
-                  // Si el bot solo tiene razonamiento y está pensando, se ve tenue
-                  isAssistant && !msg.content && msg.reasoning && "opacity-50"
+                  "rounded-2xl px-4 py-3 shadow-sm text-sm break-words",
+                  isUser ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
                 )}>
-                  {/* Lógica de visualización de contenido */}
                   {isUser ? (
-                    msg.content // El usuario SIEMPRE muestra su contenido
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
                   ) : (
-                    <>
-                      {msg.content || (isLast && thinking ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs italic">
-                            {msg.reasoning ? "Generando respuesta..." : "Pensando..."}
-                          </span>
-                        </div>
-                      ) : null)}
-                    </>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          // Personalizamos cómo se ven los bloques de código
+                          code({ node, inline, className, children, ...props }: any) {
+                            const match = /language-(\w+)/.exec(className || '');
+                            return !inline && match ? (
+                              <SyntaxHighlighter
+                                style={vscDarkPlus}
+                                language={match[1]}
+                                PreTag="div"
+                                className="rounded-md my-2"
+                                {...props}
+                              >
+                                {String(children).replace(/\n$/, '')}
+                              </SyntaxHighlighter>
+                            ) : (
+                              <code className={cn("bg-black/10 rounded px-1", className)} {...props}>
+                                {children}
+                              </code>
+                            );
+                          },
+                          // Ajuste para que los párrafos no tengan márgenes extraños
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        }}
+                      >
+                        {msg.content || (isLast && thinking ? "..." : "")}
+                      </ReactMarkdown>
+                    </div>
                   )}
                 </div>
+
               </div>
             </div>
           );

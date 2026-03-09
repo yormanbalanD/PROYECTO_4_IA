@@ -1,14 +1,14 @@
 import Dexie, { type EntityTable } from 'dexie';
 
-/**
- * Representa una sesión de chat (el "hilo" de la conversación)
- */
+// En tu archivo de base de datos
 export interface ChatSession {
   id?: number;
   title: string;
   updatedAt: number;
-  lastResponseId?: string; // <--- Almacenamos el contexto aquí
+  lastResponseId?: string;
+  chefLabel?: string; // <--- Nueva propiedad para guardar el cocinero
 }
+
 
 /**
  * Representa un mensaje individual dentro de una sesión.
@@ -31,12 +31,11 @@ class FmoWinConfDatabase extends Dexie {
   messages!: EntityTable<Message, 'id'>;
 
   constructor() {
-    super('FmoWinConfDatabase');
+    super('DB');
 
-    // Versión 1: Esquema inicial
-    // Versión 2: Añadimos índices para búsquedas por sesión y tiempo
-    this.version(2).stores({
-      sessions: '++id, updatedAt',
+    // Actualiza la versión si es necesario (ej. versión 3)
+    this.version(3).stores({
+      sessions: '++id, updatedAt, chefLabel', // Añadimos chefLabel al índice
       messages: '++id, sessionId, timestamp'
     });
   }

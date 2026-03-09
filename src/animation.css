@@ -1,0 +1,23 @@
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-hover {
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  /* La animación corre siempre, pero está pausada */
+  animation: gradient-move 4s ease infinite;
+  animation-play-state: paused;
+  /* Transición para el color de fondo y posición si fuera necesario */
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              background-position 0.8s ease;
+}
+
+.animate-gradient-hover:hover {
+  /* Se reanuda desde donde se quedó */
+  animation-play-state: running;
+  transform: scale(1.05);
+}

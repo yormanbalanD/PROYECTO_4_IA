@@ -1,21 +1,47 @@
-import { SendHorizontal, BrainCircuit, Loader2, Square } from "lucide-react";
+import { useState } from "react";
+import {
+  SendHorizontal,
+  BrainCircuit,
+  Loader2,
+  Square,
+  Lock
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
-import { useState } from "react";
 import { cn } from "../lib/utils";
+import { personalidades } from "../lib/api";
 
 interface ChatProps {
   onSendMessage: (message: string) => void;
-  onStopGeneration: () => void; // <--- Nueva prop para detener
+  onStopGeneration: () => void;
   isLoading: boolean;
   thinking: boolean;
   setThinking: (val: boolean) => void;
+  selectedChefLabel?: string; // Opcional para evitar errores de carga inicial
 }
 
-export function Chat({ onSendMessage, onStopGeneration, isLoading, thinking, setThinking }: ChatProps) {
+export function Chat({
+  onSendMessage,
+  onStopGeneration,
+  isLoading,
+  thinking,
+  setThinking,
+  selectedChefLabel
+}: ChatProps) {
   const [input, setInput] = useState("");
+
+  // --- Lógica de Seguridad para el renderizado ---
+
+  // 1. Si no hay label, no renderizamos el componente para evitar errores de split
+  if (!selectedChefLabel) return null;
+
+  // 2. Buscamos la info del chef basada en el label de la DB
+  const chefInfo = personalidades.find(p => p.label === selectedChefLabel);
+
+  // 3. Obtenemos el nombre corto (antes del paréntesis) de forma segura
+  const chefName = selectedChefLabel.split('(')[0]?.trim() || "Cocinero";
 
   const handleAction = () => {
     if (isLoading) {
@@ -28,44 +54,61 @@ export function Chat({ onSendMessage, onStopGeneration, isLoading, thinking, set
   };
 
   return (
-    <div className="border-t bg-background p-4 space-y-3">
-      <div className="mx-auto max-w-3xl flex justify-end items-center gap-2 px-1">
-        <Label htmlFor="think-mode" className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-          <BrainCircuit className="h-4 w-4" /> Razonamiento
-        </Label>
-        <Switch 
-          id="think-mode" 
-          checked={thinking} 
-          onCheckedChange={setThinking} 
-        />
+    <div className="border-t p-4 space-y-3 bg-[#cdcdcd]">
+      <div className="mx-auto max-w-3xl flex justify-between items-center px-1">
+        {/* Indicador de Personalidad Bloqueada */}
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border text-[10px] font-bold uppercase text-muted-foreground animate-in fade-in slide-in-from-left-2">
+          {chefInfo?.icon && <span className="scale-75 text-primary">{chefInfo.icon}</span>}
+          <span>{chefName}</span>
+          <Lock className="h-3 w-3 opacity-90" />
+        </div>
+
+        {/* Switch de Razonamiento */}
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor="think-mode"
+            className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1 cursor-pointer"
+          >
+            <BrainCircuit className={cn("h-4 w-4 text-primary", thinking && "text-yellow-200")} /> Razonamiento
+          </Label>
+          <Switch
+            id="think-mode"
+            checked={thinking}
+            onCheckedChange={setThinking}
+          />
+        </div>
       </div>
 
       <div className="mx-auto max-w-3xl relative flex items-end gap-2">
         <div className="relative flex-1">
           <Textarea
-            placeholder={isLoading ? "Generando respuesta..." : "Escribe al chatbot..."}
+            placeholder={isLoading ? "El chef está preparando una respuesta..." : `Escribe a ${chefName}...`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && !isLoading && (e.preventDefault(), handleAction())}
-            // Eliminamos el disabled para permitir escribir mientras piensa, o puedes dejarlo si prefieres
-            className="min-h-[44px] max-h-40 w-full resize-none bg-muted/50 pr-12 py-3 focus-visible:ring-1"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+                e.preventDefault();
+                handleAction();
+              }
+            }}
+            className="min-h-[44px] max-h-40 w-full resize-none bg-muted/30 pr-12 py-3 focus-visible:ring-1 border-muted-foreground/20"
             rows={1}
           />
-          <Button 
-            size="icon" 
+          <Button
+            size="icon"
             className={cn(
-              "absolute right-1.5 bottom-1.5 h-8 w-8 transition-all",
-              isLoading ? "bg-destructive hover:bg-destructive/90" : ""
+              "absolute right-1.5 bottom-1.5 h-8 w-8 transition-all duration-300 shadow-lg",
+              isLoading
+                ? "bg-destructive text-destructive-foreground animate-pulse"
+                : selectedChefLabel.includes("Jeremias")
+                  ? "bg-slate-800 text-white hover:bg-slate-900" // Contraste para el fondo claro
+                  : "bg-white text-slate-900 hover:bg-white/90" // Contraste para fondos oscuros (Judas/Kotori)
             )}
-            // Solo deshabilitado si no hay texto Y no está cargando
             disabled={!input.trim() && !isLoading}
             onClick={handleAction}
           >
             {isLoading ? (
-              <div className="relative flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <Square className="h-2 w-2 fill-current absolute" /> 
-              </div>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <SendHorizontal className="h-4 w-4" />
             )}
