@@ -94,7 +94,7 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
 
                 {/* 2. BURBUJA DE TEXTO */}
                 <div className={cn(
-                  "rounded-2xl px-4 py-3 shadow-sm text-sm break-words",
+                  "rounded-2xl px-4 py-3 shadow-sm text-sm wrap-break-words max-w-2xl",
                   isUser ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
                 )}>
                   {isUser ? (
@@ -106,6 +106,7 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
                         <ThinkingLoader />
                       ) : (
                         <ReactMarkdown
+                      
                           remarkPlugins={[remarkGfm]}
                           components={{
                             code({ node, inline, className, children, ...props }: any) {
