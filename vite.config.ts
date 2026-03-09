@@ -11,4 +11,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Esto inyecta 'process.env' directamente en el bundle de JS
+    'process.env': {
+      LMS_NO_FANCY_ERRORS: 'true'
+    },
+    'process.browser': true,
+  },
 })
