@@ -95,24 +95,35 @@ export function Chat({
             rows={1}
           />
           <Button
-            size="icon"
-            className={cn(
-              "absolute right-1.5 bottom-1.5 h-8 w-8 transition-all duration-300 shadow-lg",
-              isLoading
-                ? "bg-destructive text-destructive-foreground animate-pulse"
-                : selectedChefLabel.includes("Jeremias")
-                  ? "bg-slate-800 text-white hover:bg-slate-900" // Contraste para el fondo claro
-                  : "bg-white text-slate-900 hover:bg-white/90" // Contraste para fondos oscuros (Judas/Kotori)
-            )}
-            disabled={!input.trim() && !isLoading}
-            onClick={handleAction}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <SendHorizontal className="h-4 w-4" />
-            )}
-          </Button>
+  size="icon"
+  className={cn(
+    "absolute right-1.5 bottom-1.5 h-8 w-8 overflow-hidden transition-all duration-300 shadow-lg group",
+    isLoading
+      ? "bg-destructive text-destructive-foreground"
+      : selectedChefLabel.includes("Jeremias")
+        ? "bg-slate-800 text-white hover:bg-slate-900"
+        : "bg-white text-slate-900 hover:bg-white/90"
+  )}
+  disabled={!input.trim() && !isLoading}
+  onClick={handleAction}
+>
+  <div className="relative h-4 w-4 flex items-center justify-center">
+    {isLoading ? (
+      <>
+        {/* Icono de Carga: Se desvanece y se achica al hacer hover */}
+        <Loader2 
+          className="absolute h-4 w-4 animate-spin transition-all duration-300 opacity-100 scale-100 group-hover:opacity-0 group-hover:scale-50" 
+        />
+        {/* Icono Cuadrado: Aparece desde la transparencia y crece al hacer hover */}
+        <Square 
+          className="absolute h-4 w-4 transition-all duration-300 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 fill-current" 
+        />
+      </>
+    ) : (
+      <SendHorizontal className="h-4 w-4 transition-transform duration-300" />
+    )}
+  </div>
+</Button>
         </div>
       </div>
     </div>

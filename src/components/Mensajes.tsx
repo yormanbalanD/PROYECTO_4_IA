@@ -15,6 +15,18 @@ interface MensajesProps {
   raw?: boolean;
 }
 
+// Sub-componente para la animación de carga
+const ThinkingLoader = () => (
+  <div className="flex items-center gap-2 text-muted-foreground italic">
+    <span>Analizando pregunta</span>
+    <span className="flex gap-1">
+      <span className="animate-bounce [animation-delay:-0.3s]">.</span>
+      <span className="animate-bounce [animation-delay:-0.15s]">.</span>
+      <span className="animate-bounce">.</span>
+    </span>
+  </div>
+);
+
 export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -23,10 +35,10 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
     if (scrollContainer) {
       scrollContainer.scrollTo({
         top: scrollContainer.scrollHeight,
-        behavior: "auto", // Cambiado a auto para evitar saltos en streams rápidos
+        behavior: "auto",
       });
     }
-  }, [messages, thinking]); // Agregamos thinking como dependencia
+  }, [messages, thinking]);
 
   return (
     <ScrollArea ref={scrollRef} className="h-full w-full">
@@ -55,7 +67,7 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
                 isUser ? "items-end" : "items-start"
               )}>
 
-                {/* 1. RAZONAMIENTO: Solo para asistente y si no es RAW */}
+                {/* 1. RAZONAMIENTO */}
                 {!raw && isAssistant && msg.reasoning && (
                   <Accordion
                     type="single"
@@ -70,7 +82,6 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
                           Razonamiento
                         </span>
                       </AccordionTrigger>
-                      {/* Eliminamos el height fijo y forzamos overflow visible para que crezca */}
                       <AccordionContent className="text-xs text-muted-foreground italic leading-relaxed whitespace-pre-wrap overflow-visible h-auto">
                         {msg.reasoning}
                         {isLast && thinking && !msg.content && (
@@ -81,7 +92,7 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
                   </Accordion>
                 )}
 
-                {/* 2. BURBUJA DE TEXTO: Siempre visible para el usuario, condicional para el bot */}
+                {/* 2. BURBUJA DE TEXTO */}
                 <div className={cn(
                   "rounded-2xl px-4 py-3 shadow-sm text-sm break-words",
                   isUser ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
@@ -90,43 +101,44 @@ export function Mensajes({ messages, thinking, raw = false }: MensajesProps) {
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   ) : (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          // Personalizamos cómo se ven los bloques de código
-                          code({ node, inline, className, children, ...props }: any) {
-                            const match = /language-(\w+)/.exec(className || '');
-                            return !inline && match ? (
-                              <SyntaxHighlighter
-                                style={vscDarkPlus}
-                                language={match[1]}
-                                PreTag="div"
-                                className="rounded-md my-2"
-                                {...props}
-                              >
-                                {String(children).replace(/\n$/, '')}
-                              </SyntaxHighlighter>
-                            ) : (
-                              <code className={cn("bg-black/10 rounded px-1", className)} {...props}>
-                                {children}
-                              </code>
-                            );
-                          },
-                          // Ajuste para que los párrafos no tengan márgenes extraños
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                        }}
-                      >
-                        {msg.content || (isLast && thinking ? "..." : "")}
-                      </ReactMarkdown>
+                      {/* Lógica para mostrar "Analizando..." solo si no hay contenido aún */}
+                      {isLast && thinking && !msg.content ? (
+                        <ThinkingLoader />
+                      ) : (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            code({ node, inline, className, children, ...props }: any) {
+                              const match = /language-(\w+)/.exec(className || '');
+                              return !inline && match ? (
+                                <SyntaxHighlighter
+                                  style={vscDarkPlus}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  className="rounded-md my-2"
+                                  {...props}
+                                >
+                                  {String(children).replace(/\n$/, '')}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code className={cn("bg-black/10 rounded px-1", className)} {...props}>
+                                  {children}
+                                </code>
+                              );
+                            },
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      )}
                     </div>
                   )}
                 </div>
-
               </div>
             </div>
           );
         })}
-        {/* Espaciador final para el scroll */}
         <div className="h-8" />
       </div>
     </ScrollArea>
