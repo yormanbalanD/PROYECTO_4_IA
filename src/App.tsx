@@ -20,7 +20,7 @@ export const getChefSolidBg = (label?: string) => {
 function App() {
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [thinking, setThinking] = useState(true); // Cambiado a false por defecto
+  const [thinking, setThinking] = useState(false); // Cambiado a false por defecto
   const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   const messages = useLiveQuery(
@@ -40,7 +40,7 @@ function App() {
   );
 
   // 2. Modificar handleSendMessage para que use el chef de la sesión
-  const handleSendMessage = async (userInput: string) => {
+  const handleSendMessage = async (userInput: string, temperatura: string) => {
     if (!currentSessionId) return;
 
     // Si es el primer mensaje, generamos un título corto basado en el prompt
@@ -89,7 +89,8 @@ function App() {
         controller.signal,
         currentSession.lastResponseId,
         thinking,
-        chefConfig?.content // Enviamos el prompt del chef guardado
+        chefConfig?.content, // Enviamos el prompt del chef guardado
+        temperatura
       );
 
       if (result.responseId) {

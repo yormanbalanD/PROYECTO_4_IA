@@ -4,7 +4,8 @@ import {
   BrainCircuit,
   Loader2,
   Square,
-  Lock
+  Lock,
+  Thermometer
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -12,9 +13,10 @@ import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { cn } from "../lib/utils";
 import { personalidades } from "../lib/api";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 interface ChatProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, temperatura: string) => void;
   onStopGeneration: () => void;
   isLoading: boolean;
   thinking: boolean;
@@ -31,6 +33,7 @@ export function Chat({
   selectedChefLabel
 }: ChatProps) {
   const [input, setInput] = useState("");
+  const [temperatura, setTemperatura] = useState("1")
 
   // --- Lógica de Seguridad para el renderizado ---
 
@@ -48,7 +51,7 @@ export function Chat({
       onStopGeneration();
     } else {
       if (!input.trim()) return;
-      onSendMessage(input);
+      onSendMessage(input, temperatura);
       setInput("");
     }
   };
@@ -57,10 +60,38 @@ export function Chat({
     <div className="border-t p-4 space-y-3 bg-[#cdcdcd]">
       <div className="mx-auto max-w-3xl flex justify-between items-center px-1">
         {/* Indicador de Personalidad Bloqueada */}
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border text-[10px] font-bold uppercase text-muted-foreground animate-in fade-in slide-in-from-left-2">
-          {chefInfo?.icon && <span className="scale-75 text-primary">{chefInfo.icon}</span>}
-          <span>{chefName}</span>
-          <Lock className="h-3 w-3 opacity-90" />
+        <div className="flex gap-5">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border text-[10px] font-bold uppercase text-muted-foreground animate-in fade-in slide-in-from-left-2">
+            {chefInfo?.icon && <span className="scale-75 text-primary">{chefInfo.icon}</span>}
+            <span>{chefName}</span>
+            <Lock className="h-3 w-3 opacity-90" />
+          </div>
+
+          <div>
+            <Select value={temperatura} defaultValue={temperatura} onValueChange={(value) => setTemperatura(value)}>
+              <SelectTrigger className="bg-white">
+                <Thermometer className={cn("w-4 h-4", temperatura == "1" ? "text-red-600" : temperatura == "0.75" ? "text-amber-600" : temperatura == "0.5" ? "text-amber-300" : temperatura == "0.25" ? "text-blue-300" : "text-blue-600")} />
+                <SelectValue placeholder={"Temperatura"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={"1"}>
+                  1
+                </SelectItem>
+                <SelectItem value={"0.75"}>
+                  0.75
+                </SelectItem>
+                <SelectItem value={"0.5"}>
+                  0.5
+                </SelectItem>
+                <SelectItem value={"0.25"}>
+                  0.25
+                </SelectItem>
+                <SelectItem value={"0"}>
+                  0
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Switch de Razonamiento */}
@@ -84,6 +115,7 @@ export function Chat({
           <Textarea
             placeholder={isLoading ? "El chef está preparando una respuesta..." : `Escribe a ${chefName}...`}
             value={input}
+            disabled={isLoading}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey && !isLoading) {
@@ -91,39 +123,39 @@ export function Chat({
                 handleAction();
               }
             }}
-            className="min-h-[44px] max-h-40 w-full resize-none bg-muted/30 pr-12 py-3 focus-visible:ring-1 border-muted-foreground/20"
+            className={cn("min-h-[44px] max-h-40 w-full resize-none bg-muted/30 pr-12 py-3 focus-visible:ring-1 border-muted-foreground/20", " disabled:cursor-progress")}
             rows={1}
           />
           <Button
-  size="icon"
-  className={cn(
-    "absolute right-1.5 bottom-1.5 h-8 w-8 overflow-hidden transition-all duration-300 shadow-lg group",
-    isLoading
-      ? "bg-destructive text-destructive-foreground"
-      : selectedChefLabel.includes("Jeremias")
-        ? "bg-slate-800 text-white hover:bg-slate-900"
-        : "bg-white text-slate-900 hover:bg-white/90"
-  )}
-  disabled={!input.trim() && !isLoading}
-  onClick={handleAction}
->
-  <div className="relative h-4 w-4 flex items-center justify-center">
-    {isLoading ? (
-      <>
-        {/* Icono de Carga: Se desvanece y se achica al hacer hover */}
-        <Loader2 
-          className="absolute h-4 w-4 animate-spin transition-all duration-300 opacity-100 scale-100 group-hover:opacity-0 group-hover:scale-50" 
-        />
-        {/* Icono Cuadrado: Aparece desde la transparencia y crece al hacer hover */}
-        <Square 
-          className="absolute h-4 w-4 transition-all duration-300 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 fill-current" 
-        />
-      </>
-    ) : (
-      <SendHorizontal className="h-4 w-4 transition-transform duration-300" />
-    )}
-  </div>
-</Button>
+            size="icon"
+            className={cn(
+              "absolute right-1.5 bottom-1.5 h-8 w-8 overflow-hidden transition-all duration-300 shadow-lg group",
+              isLoading
+                ? "bg-destructive text-destructive-foreground"
+                : selectedChefLabel.includes("Jeremias")
+                  ? "bg-slate-800 text-white hover:bg-slate-900"
+                  : "bg-white text-slate-900 hover:bg-white/90"
+            )}
+            disabled={!input.trim() && !isLoading}
+            onClick={handleAction}
+          >
+            <div className="relative h-4 w-4 flex items-center justify-center">
+              {isLoading ? (
+                <>
+                  {/* Icono de Carga: Se desvanece y se achica al hacer hover */}
+                  <Loader2
+                    className="absolute h-4 w-4 animate-spin transition-all duration-300 opacity-100 scale-100 group-hover:opacity-0 group-hover:scale-50"
+                  />
+                  {/* Icono Cuadrado: Aparece desde la transparencia y crece al hacer hover */}
+                  <Square
+                    className="absolute h-4 w-4 transition-all duration-300 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 fill-current"
+                  />
+                </>
+              ) : (
+                <SendHorizontal className="h-4 w-4 transition-transform duration-300" />
+              )}
+            </div>
+          </Button>
         </div>
       </div>
     </div>

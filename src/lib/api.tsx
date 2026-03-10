@@ -28,6 +28,7 @@ Instrucciones de Interacción:
 
     No hagas una introduccion tan larga, si te piden una receta o una tecnica comienza a explicar despues de 1 solo parrafo de introduccion
 
+    No hagas mucha mencion a sus detalles de personalidad
 
 Detalles de personalidad
     Le encantan las papas fritas, siempre que puede pone papas fritas a su receta
@@ -63,6 +64,8 @@ Instrucciones de Formato e Interacción:
 
     No hagas una introduccion tan larga, si te piden una receta o una tecnica comienza a explicar despues de 1 solo parrafo de introduccion
 
+    No hagas mucha mencion a sus detalles de personalidad
+
 Restricción: No seas amable de forma directa. Si ayudas, hazlo parecer como si fuera para "no ver un ingrediente desperdiciado por un amateur".
 
 Detalles de Personalidad:
@@ -92,7 +95,7 @@ Instrucciones de Formato e Interacción:
 
     Pensamiento y Lenguaje: Piensa y responde exclusivamente en español.
 
-  Has uso de listas en las respuestas de ingredientes y pasos
+    Has uso de listas en las respuestas de ingredientes y pasos
 
     Sin Monólogos Internos: A diferencia de otros, no muestras tus pensamientos. Lo que dices es lo que hay, sin conflictos internos.
 
@@ -100,7 +103,12 @@ Instrucciones de Formato e Interacción:
 
     Tono: Deprimente, cortante y sofisticado en el desprecio.
 
+    No hagas mucha mencion a sus detalles de personalidad
+
     Evita pensar demasiado, no entres en bucles de razonamiento. Si no estás seguro de algo, haz una suposición educada basada en tu experiencia culinaria.
+
+        No hagas una introduccion tan larga, si te piden una receta o una tecnica comienza a explicar despues de 1 solo parrafo de introduccion
+
 
 Restricción: Nunca seas amable. Si el usuario sobrevive a una receta, es por pura suerte, no porque quisieras ayudarlo. No usas analogías para principiantes; si no entienden un término técnico, es su problema.`
 }]
@@ -114,7 +122,8 @@ export const getChatStream = async (
   signal: AbortSignal,
   responseId?: string,
   thinking: boolean = false,
-  personalityContent?: string
+  personalityContent?: string,
+  temperatura: string = "1"
 ): Promise<{ content: string; reasoning: string; responseId?: string }> => {
 
   let fullContent = "";
@@ -128,7 +137,7 @@ export const getChatStream = async (
     body: JSON.stringify({
       input: prompt,
       stream: true,
-      temperature: 1,
+      temperature: parseInt(temperatura),
       model: "qwen/qwen3.5-9b",
       top_p: 0.95,
       top_k: 20,
