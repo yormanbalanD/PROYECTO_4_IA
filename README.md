@@ -20,9 +20,10 @@ Una interfaz de chat moderna y profesional diseñada para interactuar con modelo
 ## **📋 Requisitos Previos**
 
 1. **LM Studio:** Debe estar instalado y en ejecución.  
-2. **Servidor Local:** \* Activar el servidor en el puerto 1234\.  
+2. **Node:** Para ejecutar el proyecto se debe tener NodeJS instalado en la maquina
+3. **Servidor Local:** \* Activar el servidor en el puerto 1234\.  
    * **IMPORTANTE:** Habilitar **CORS** (Cross-Origin Resource Sharing) en la configuración del servidor de LM Studio para permitir peticiones desde el navegador.  
-3. **Modelo:** Tener al menos un modelo cargado en la memoria de LM Studio.
+4. **Modelo:** Tener al menos un modelo cargado en la memoria de LM Studio.
 
 ## **🔧 Instalación**
 
@@ -31,10 +32,10 @@ Una interfaz de chat moderna y profesional diseñada para interactuar con modelo
    cd chatbot
 
 2. Instalar dependencias:  
-   pnpm install
+   npm install
 
 3. Iniciar servidor de desarrollo:  
-   pnpm dev
+   npm dev
 
 4. Ten en cuenta que el servidor del LLM se debe de encontrar en ws://localhost:1234
 
