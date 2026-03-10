@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# **Local LLM Chat Interface & Persistence**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Una interfaz de chat moderna y profesional diseñada para interactuar con modelos de lenguaje locales ejecutados en **LM Studio**. A diferencia de las interfaces convencionales, este proyecto implementa una arquitectura de persistencia robusta y una comunicación optimizada mediante WebSockets.
 
-Currently, two official plugins are available:
+## **🚀 Características Principales**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* **Integración Nativa con LM Studio SDK:** Utiliza @lmstudio/sdk para una comunicación bidireccional vía WebSockets, permitiendo un streaming de tokens más fluido y control total sobre los parámetros del modelo.  
+* **Persistencia con IndexedDB:** Implementación de **Dexie.js** para el almacenamiento local. Esto permite guardar gigabytes de historial de chat directamente en el navegador, superando el límite de 5MB de localStorage.  
+* **Gestión Multi-sesión:** Sistema relacional que permite crear múltiples hilos de conversación, navegar por el historial y retomar sesiones anteriores.  
+* **Filtrado de Pensamiento (CoT):** Lógica avanzada para procesar y visualizar (u ocultar) etiquetas \<think\> provenientes de modelos de razonamiento como DeepSeek-R1 o Qwen-2.5-Coder.  
+* **Arquitectura Reactiva:** Sincronización automática de la interfaz de usuario con la base de datos mediante Hooks reactivos (useLiveQuery).
 
-## React Compiler
+## **🛠️ Stack Tecnológico**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Frontend:** [React](https://react.dev/) \+ [Vite](https://vitejs.dev/)  
+* **Estado y Persistencia:** [Dexie.js](https://dexie.org/) (IndexedDB)
+* **Componentes UI:** [Tailwind CSS](https://tailwindcss.com/) \+ [shadcn/ui](https://ui.shadcn.com/)  
+* **Iconografía:** [Lucide React](https://lucide.dev/)
 
-## Expanding the ESLint configuration
+## **📋 Requisitos Previos**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. **LM Studio:** Debe estar instalado y en ejecución.  
+2. **Servidor Local:** \* Activar el servidor en el puerto 1234\.  
+   * **IMPORTANTE:** Habilitar **CORS** (Cross-Origin Resource Sharing) en la configuración del servidor de LM Studio para permitir peticiones desde el navegador.  
+3. **Modelo:** Tener al menos un modelo cargado en la memoria de LM Studio.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## **🔧 Instalación**
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. Clonar el repositorio:  
+   git clone \[https://github.com/yormanbalanD/PROYECTO_4_IA.git\](https://github.com/yormanbalanD/PROYECTO_4_IA.git)  
+   cd chatbot
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. Instalar dependencias:  
+   pnpm install
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. Iniciar servidor de desarrollo:  
+   pnpm dev
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+4. Ten en cuenta que el servidor del LLM se debe de encontrar en ws://localhost:1234
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## **🏗️ Estructura de Datos (IndexedDB)**
+
+El proyecto utiliza un esquema relacional dentro de IndexedDB para manejar el historial:  
+// Esquema de Dexie  
+db.version(1).stores({  
+  sessions: '++id, updatedAt',        // Tabla de conversaciones  
+  messages: '++id, sessionId, timestamp' // Tabla de mensajes vinculados  
+});
+
+## **⚠️ Notas Técnicas de Entorno**
+
+Debido a que el SDK oficial de LM Studio busca variables de entorno de Node.js (process.env), se ha incluido un parche de compatibilidad en la configuración de Vite para prevenir errores en el entorno del navegador:  
+// vite.config.ts  
+export default defineConfig({  
+  define: {  
+    'process.env': {  
+      LMS\_NO\_FANCY\_ERRORS: 'true'  
+    }  
+  }  
+})
+
+## **📄 Licencia**
+
+Este proyecto se distribuye bajo la licencia MIT.
